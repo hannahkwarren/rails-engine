@@ -70,4 +70,15 @@ RSpec.describe "The merchants API" do
     end
   end
 
+  context "when merchant record doesn't exist" do
+    xit "returns status code 404" do 
+      id = 1313487235964719847
+
+      get api_v1_merchant_items_path(id)
+      binding.pry
+      expect(response).to have_http_status(404)
+      expect(response.body).to match(/not found/)
+
+    end
+  end
 end
