@@ -15,9 +15,6 @@ RSpec.describe "The merchants API" do
     expect(merchants_data.count).to eq(5)
 
     merchants_data.each do |merchant|
-      expect(merchant).to have_key(:id)
-      expect(merchant[:id]).to be_an(Integer)
-
       expect(merchant).to have_key(:name)
       expect(merchant[:name]).to be_a(String)
     end
@@ -32,9 +29,9 @@ RSpec.describe "The merchants API" do
     
     expect(response).to be_successful
     
-    expect(merchant).to have_key(:id)
-    expect(merchant[:id]).to be_an(Integer)
-    expect(merchant[:id]).to eq(id)
+    # expect(merchant).to have_key(:id)
+    # expect(merchant[:id]).to be_an(Integer)
+    # expect(merchant[:id]).to eq(id)
 
     expect(merchant).to have_key(:name)
     expect(merchant[:name]).to be_a(String)
@@ -48,7 +45,7 @@ RSpec.describe "The merchants API" do
     get api_v1_merchant_items_path(id)
 
     items = JSON.parse(response.body, symbolize_names: true )
-    
+    # binding.pry
     merchant_items_attributes = items[:data].map {|i| i[:attributes]}
     merchant_items_relationships = items[:data].map {|i| i[:relationships]}
     
@@ -75,9 +72,9 @@ RSpec.describe "The merchants API" do
       id = 1313487235964719847
 
       get api_v1_merchant_items_path(id)
-      binding.pry
+      # binding.pry
       expect(response).to have_http_status(404)
-      expect(response.body).to match(/not found/)
+      expect(response.body).to match("{\"error\":\"Couldn't find Merchant with 'id'=1313487235964719847\"}")
 
     end
   end

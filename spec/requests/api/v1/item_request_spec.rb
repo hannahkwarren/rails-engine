@@ -57,7 +57,7 @@ RSpec.describe "The Items API" do
     expect(item_attributes[:merchant_id]).to be_an(Integer)
   end
 
-  it "can create an item" do 
+  it "can create an item, ignores superfluous keys + values" do 
     id = create(:merchant).id 
     item_params = ({
       name: 'Thingamabob',
@@ -103,6 +103,22 @@ RSpec.describe "The Items API" do
     expect{ delete api_v1_item_path(item.id) }.to change(Item, :count).by(-1)
     expect(response).to have_http_status(204)
     expect{Item.find(item.id)}.to raise_error(ActiveRecord::RecordNotFound)
+  end
+
+  it "can return one merchant at /api/v1/items/:id/merchant" do 
+    m_id = create(:merchant).id
+    item = create(:item, merchant_id: m_id)
+
+    get "/api/v1/items/#{item.id}/merchant"
+
+    merchant_data = JSON.parse(response.body, symbolize_names: true)[:data]
+    merchant_attributes = merchant_data[:attributes]
+
+    expect(response).to be_successful
+    expect(merchant_data.count).to eq(3)
+    expect(merchant_attributes.count).to eq(1)
+    expect(merchant_attributes).to have_key(:name)
+    expect(merchant_attributes[:name]).to be_a(String)
   end
 
 end
