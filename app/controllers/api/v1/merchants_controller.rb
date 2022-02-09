@@ -19,10 +19,6 @@ class Api::V1::MerchantsController < ApplicationController
     # end
   end
 
-  def render_404 
-    render :status => 404, :text => "not found"
-  end
-
   private
   def set_merchant 
     @merchant = Merchant.find(params[:id]) or not_found

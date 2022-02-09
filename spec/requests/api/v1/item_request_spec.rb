@@ -63,7 +63,8 @@ RSpec.describe "The Items API" do
       name: 'Thingamabob',
       description: 'A fork.',
       unit_price: 9.99,
-      merchant_id: id
+      merchant_id: id, 
+      nonsense: 'stuff'
     })
     headers = {"CONTENT_TYPE" => "application/json"}
 
@@ -79,7 +80,29 @@ RSpec.describe "The Items API" do
     expect(created_item.merchant_id).to eq(item_params[:merchant_id])
   end
 
+  it "can edit an existing item" do 
+    id = create(:item).id
+      
+    previous_description = Item.last.description
+    item_params = { description: "Isn't it neat?" }
+    headers = {"CONTENT_TYPE" => "application/json"}
+    
+      # We include this header to make sure that these params are passed as JSON rather than as plain text
+    patch api_v1_item_path(id), headers: headers, params: JSON.generate({item: item_params})
+    
+    item = Item.find_by(id: id)
+    
+    expect(response).to be_successful
+    expect(item.description).to_not eq(previous_description)
+    expect(item.description).to eq("Isn't it neat?")
+  end
 
-
+  it "can destroy an item" do
+    item = create(:item)
+  
+    expect{ delete api_v1_item_path(item.id) }.to change(Item, :count).by(-1)
+    expect(response).to have_http_status(204)
+    expect{Item.find(item.id)}.to raise_error(ActiveRecord::RecordNotFound)
+  end
 
 end

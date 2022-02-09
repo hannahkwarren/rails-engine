@@ -9,7 +9,16 @@ class Api::V1::ItemsController < ApplicationController
   end
   
   def create 
+    item_params.select { |x| Item.attribute_names.index(x)}
     render json: ItemSerializer.new(Item.create(item_params))
+  end
+
+  def update 
+    render json: ItemSerializer.new(Item.update(params[:id],item_params))
+  end
+
+  def destroy
+    Item.destroy(params[:id])
   end
 
   private

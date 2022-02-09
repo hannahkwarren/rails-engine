@@ -71,7 +71,7 @@ RSpec.describe "The merchants API" do
   end
 
   context "when merchant record doesn't exist" do
-    xit "returns status code 404" do 
+    it "returns status code 404" do 
       id = 1313487235964719847
 
       get api_v1_merchant_items_path(id)
