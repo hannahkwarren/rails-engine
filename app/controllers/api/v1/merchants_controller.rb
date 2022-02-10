@@ -9,8 +9,20 @@ class Api::V1::MerchantsController < ApplicationController
     render json: MerchantSerializer.new(@merchant)
   end
 
+  def valid_name_input(args)
+    args != ""
+  end
+
   def find 
-    render json: MerchantSerializer.new(Merchant.name_search(params[:name]).first)
+    merchant = Merchant.name_search(params[:name]).first
+    
+    if valid_name_input(params[:name]) && merchant != nil
+      render json: MerchantSerializer.new(merchant)
+    elsif merchant == nil
+      render json: { data: { error: "No matching names found"}}, status: 200
+    else
+      render json: { data: { error: "Invalid request"}}, status: 400
+    end
   end
 
   def find_all 
