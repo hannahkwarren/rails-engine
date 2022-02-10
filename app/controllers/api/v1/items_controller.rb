@@ -43,7 +43,12 @@ class Api::V1::ItemsController < ApplicationController
   end
 
   def find_item 
-    render json: ItemSerializer.new(Item.name_search(params[:query]).first)
+    if params[:name]
+      render json: ItemSerializer.new(Item.name_search(params[:query]).first)
+    else
+      # binding.pry
+      render json: ItemSerializer.new(Item.price_search({min: params[:min_price], max: params[:max_price]}))
+    end
   end
 
   private

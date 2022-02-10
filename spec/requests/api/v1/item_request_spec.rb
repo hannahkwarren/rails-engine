@@ -104,38 +104,96 @@ RSpec.describe "The Items API" do
     expect{Item.find(item.id)}.to raise_error(ActiveRecord::RecordNotFound)
   end
 
-  it "can return one merchant at /api/v1/items/:id/merchant" do 
-    m_id = create(:merchant).id
-    item = create(:item, merchant_id: m_id)
+  context "non-RESTful" do 
+    it "can return one merchant at /api/v1/items/:id/merchant" do 
+      m_id = create(:merchant).id
+      item = create(:item, merchant_id: m_id)
 
-    get "/api/v1/items/#{item.id}/merchant"
+      get "/api/v1/items/#{item.id}/merchant"
 
-    merchant_data = JSON.parse(response.body, symbolize_names: true)[:data]
-    merchant_attributes = merchant_data[:attributes]
+      merchant_data = JSON.parse(response.body, symbolize_names: true)[:data]
+      merchant_attributes = merchant_data[:attributes]
 
-    expect(response).to be_successful
-    expect(merchant_data.count).to eq(3)
-    expect(merchant_attributes.count).to eq(1)
-    expect(merchant_attributes).to have_key(:name)
-    expect(merchant_attributes[:name]).to be_a(String)
+      expect(response).to be_successful
+      expect(merchant_data.count).to eq(3)
+      expect(merchant_attributes.count).to eq(1)
+      expect(merchant_attributes).to have_key(:name)
+      expect(merchant_attributes[:name]).to be_a(String)
+    end
+
+    it "can search for many items results" do 
+      item1 = create(:item, name: "nEmo A")
+      item2 = create(:item, name: "nemo B")
+      item3 = create(:item, name: "Nemo C")
+      item4 = create(:item, name: "NemO D")
+      item5 = create(:item, name: "nemo E")
+
+      get "/api/v1/items/find_all?name=Nemo"
+      
+      expect(response).to be_successful
+      data = JSON.parse(response.body, symbolize_names: true)[:data]
+
+      expect(data).to be_an(Array)
+      expect(data.length).to eq(5)
+    end
+
+    it "can get items over a minimum unit_price" do 
+      item1 = create(:item, unit_price: 0.99)
+      item2 = create(:item, unit_price: 8.50)
+      item3 = create(:item, unit_price: 10.00)
+      item4 = create(:item, unit_price: 100.00)
+      item5 = create(:item, unit_price: 300.99)
+
+      get "/api/v1/items/find?min_price=10"
+
+      expect(response).to be_successful 
+      data = JSON.parse(response.body, symbolize_names: true)[:data]
+
+      expect(data).to be_an(Array)
+      expect(data.length).to eq(3)
+      # binding.pry
+      names = data.map { |m| m[:attributes][:name] }
+      expect(names).to eq([item3.name, item4.name, item5.name])
+    end
+
+    it "can get items under a maximum unit_price" do 
+      item1 = create(:item, unit_price: 0.99)
+      item2 = create(:item, unit_price: 8.50)
+      item3 = create(:item, unit_price: 10.00)
+      item4 = create(:item, unit_price: 100.00)
+      item5 = create(:item, unit_price: 300.99)
+
+      get "/api/v1/items/find?max_price=10"
+
+      expect(response).to be_successful 
+      data = JSON.parse(response.body, symbolize_names: true)[:data]
+
+      expect(data).to be_an(Array)
+      expect(data.length).to eq(3)
+      # binding.pry
+      names = data.map { |m| m[:attributes][:name] }
+      expect(names).to eq([item1.name, item2.name, item3.name])
+    end
+
+    it "can get items over a minimum AND under a maximum unit_price" do 
+      item1 = create(:item, unit_price: 0.99)
+      item2 = create(:item, unit_price: 8.50)
+      item3 = create(:item, unit_price: 10.00)
+      item4 = create(:item, unit_price: 50.00)
+      item5 = create(:item, unit_price: 300.99)
+
+      get "/api/v1/items/find?min_price=8&max_price=50"
+
+      expect(response).to be_successful 
+      data = JSON.parse(response.body, symbolize_names: true)[:data]
+
+      expect(data).to be_an(Array)
+      expect(data.length).to eq(3)
+      # binding.pry
+      names = data.map { |m| m[:attributes][:name] }
+      expect(names).to eq([item2.name, item3.name, item4.name])
+    end
   end
 
-  it "can search for many items results" do 
-    item1 = create(:item, name: "nEmo A")
-    item2 = create(:item, name: "nemo B")
-    item3 = create(:item, name: "Nemo C")
-    item4 = create(:item, name: "NemO D")
-    item5 = create(:item, name: "nemo E")
-
-    get "/api/v1/items/find_all?name=Nemo"
-    
-    expect(response).to be_successful
-    data = JSON.parse(response.body, symbolize_names: true)[:data]
-
-    expect(data).to be_an(Array)
-    expect(data.length).to eq(5)
-  end
-
-  
 
 end

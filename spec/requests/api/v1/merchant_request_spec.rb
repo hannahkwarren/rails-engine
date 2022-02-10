@@ -76,7 +76,7 @@ RSpec.describe "The merchants API" do
   end
 
   context "happy path, non-RESTful" do 
-    it "searches by name" do
+    it "find, search by name" do
       merch1 = create(:merchant, name: "Little Big Shoppe of Horrors")
       merch2 = create(:merchant, name: "This Shop Blinks")
       merch3 = create(:merchant, name: "Easily Amused Studio")
@@ -85,9 +85,31 @@ RSpec.describe "The merchants API" do
 
       get "/api/v1/merchants/find?name=Big"
 
+      expect(response).to be_successful
+     
+      result = JSON.parse(response.body, symbolize_names: true )[:data][:attributes]
+
+      expect(result.count).to eq(1)
+      expect(result[:name]).to eq(merch1.name)
+    end
+
+    it "find_all, search by name" do
+      merch1 = create(:merchant, name: "Little Big Shoppe of Horrors")
+      merch2 = create(:merchant, name: "This Shop Blinks")
+      merch3 = create(:merchant, name: "Easily Amused Studio")
+      merch4 = create(:merchant, name: "the big easy shop")
+      merch5 = create(:merchant, name: "allDolls")
+
+      get "/api/v1/merchants/find_all?name=Big"
+
       expect(response).to be_successful 
       results = JSON.parse(response.body, symbolize_names: true )[:data]
       expect(results.count).to eq(2)
+      
+      names = results.map do |r|
+        r[:attributes][:name]
+      end
+      expect(names).to eq([merch1.name, merch4.name])
     end
   end
 
