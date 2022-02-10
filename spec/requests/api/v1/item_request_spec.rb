@@ -121,6 +121,35 @@ RSpec.describe "The Items API" do
       expect(merchant_attributes[:name]).to be_a(String)
     end
 
+    it "can search for an item resuls" do 
+      item1 = create(:item, name: "nEmo A")
+      item2 = create(:item, name: "nemo B")
+      item3 = create(:item, name: "Nemo C")
+      item4 = create(:item, name: "NemO D")
+      item5 = create(:item, name: "nemo E")
+
+      get "/api/v1/items/find?name=Nemo"
+      
+      expect(response).to be_successful
+      
+      item = JSON.parse(response.body, symbolize_names: true)[:data]
+
+      expect(item).to be_a(Hash)
+      expect(item[:attributes][:name]).to eq("NemO D")
+    end
+
+    it "sad path: search for a fragment, no results" do 
+      item1 = create(:item, name: "nEmo A")
+      item2 = create(:item, name: "nemo B")
+      item3 = create(:item, name: "Nemo C")
+      item4 = create(:item, name: "NemO D")
+      item5 = create(:item, name: "nemo E")
+
+      get "/api/v1/items/find?name="
+      expect(response).to have_http_status(200)
+      expect(response.body).to eq("{\"data\":{\"error\":\"No matching names found\"}}")
+    end
+
     it "can search for many items results" do 
       item1 = create(:item, name: "nEmo A")
       item2 = create(:item, name: "nemo B")
@@ -137,26 +166,23 @@ RSpec.describe "The Items API" do
       expect(data.length).to eq(5)
     end
 
-    it "can get items over a minimum unit_price" do 
+    it "can get first item over a minimum unit_price" do 
       item1 = create(:item, unit_price: 0.99)
       item2 = create(:item, unit_price: 8.50)
-      item3 = create(:item, unit_price: 10.00)
-      item4 = create(:item, unit_price: 100.00)
-      item5 = create(:item, unit_price: 300.99)
+      item3 = create(:item, name: "C", unit_price: 10.00)
+      item4 = create(:item, name: "B", unit_price: 100.00)
+      item5 = create(:item, name: "A", unit_price: 300.99)
 
       get "/api/v1/items/find?min_price=10"
 
       expect(response).to be_successful 
       data = JSON.parse(response.body, symbolize_names: true)[:data]
 
-      expect(data).to be_an(Array)
-      expect(data.length).to eq(3)
-      # binding.pry
-      names = data.map { |m| m[:attributes][:name] }
-      expect(names).to eq([item3.name, item4.name, item5.name])
+      expect(data).to be_a(Hash)
+      expect(data[:attributes][:name]).to eq(item5.name)
     end
 
-    it "can get items under a maximum unit_price" do 
+    it "can get first item under a maximum unit_price" do 
       item1 = create(:item, unit_price: 0.99)
       item2 = create(:item, unit_price: 8.50)
       item3 = create(:item, unit_price: 10.00)
@@ -168,11 +194,8 @@ RSpec.describe "The Items API" do
       expect(response).to be_successful 
       data = JSON.parse(response.body, symbolize_names: true)[:data]
 
-      expect(data).to be_an(Array)
-      expect(data.length).to eq(3)
-      # binding.pry
-      names = data.map { |m| m[:attributes][:name] }
-      expect(names).to eq([item1.name, item2.name, item3.name])
+      expect(data).to be_a(Hash)
+      expect(data[:attributes][:name]).to eq(item3.name)
     end
 
     it "can get items over a minimum AND under a maximum unit_price" do 
@@ -187,11 +210,8 @@ RSpec.describe "The Items API" do
       expect(response).to be_successful 
       data = JSON.parse(response.body, symbolize_names: true)[:data]
 
-      expect(data).to be_an(Array)
-      expect(data.length).to eq(3)
-      # binding.pry
-      names = data.map { |m| m[:attributes][:name] }
-      expect(names).to eq([item2.name, item3.name, item4.name])
+      expect(data).to be_a(Hash)
+      expect(data[:attributes][:name]).to eq(item2.name)
     end
   end
 

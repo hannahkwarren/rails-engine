@@ -42,12 +42,49 @@ class Api::V1::ItemsController < ApplicationController
     render json: ItemSerializer.new(Item.name_search(params[:name]))
   end
 
+  def check_for_name_price(args={})
+    params[:name] && (params[:min_price] || params[:max_price])
+  end
+
+  def valid_price_input(args={})
+    args[:min_price].to_i > 0 || args[:max_price].to_i > 0
+  end
+
+  def valid_name_input(args)
+    args != ""
+  end
+
   def find_item 
-    if params[:name]
-      render json: ItemSerializer.new(Item.name_search(params[:query]).first)
+    if check_for_name_price(params) 
+      render json: { data: { error: "Invalid request"}}, status: 400
+    elsif (params[:name])
+
+      if valid_name_input(params[:name])
+        items = Item.name_search(params[:name])
+      
+        if items == []
+          render json: { data: {error: "No matching names found"} }, status: 200
+        else
+          render json: ItemSerializer.new(items.first)
+        end
+      else
+        render json: { data: {error: "No matching names found"} }, status: 200
+      end
+    elsif params[:min_price] || params[:max_price]
+
+      if valid_price_input(params) == true
+        items = Item.price_search({min: params[:min_price], max: params[:max_price]})
+      
+        if items == []
+          render json: { data: {error: "error"}}, status: :bad_request
+        else
+          render json: ItemSerializer.new(items.first)
+        end
+      else
+        render json: { data: [], error: "error"}, status: :bad_request
+      end
     else
-      # binding.pry
-      render json: ItemSerializer.new(Item.price_search({min: params[:min_price], max: params[:max_price]}))
+      render json: { data: [], error: "error"}, status: :bad_request
     end
   end
 

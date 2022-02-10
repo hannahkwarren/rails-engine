@@ -6,16 +6,21 @@ module SearchModule
 
   module ClassMethods
     def name_search(query)
-      where("lower(name) ILIKE ?", "%#{query.downcase}%").order(name: :asc)
+      where("name ILIKE ?", "%#{query.downcase}%").order(name: :asc)
     end
 
     def price_search(args={})
       if args[:min] != nil && args[:max] == nil
-        where("unit_price >= ?", args[:min]).order(unit_price: :asc)
-      elsif args[:min] == nil && args[:max] != nil
-        where("unit_price <= ?", args[:max]).order(unit_price: :asc)
-      else
+        where("unit_price >= ?", args[:min]).order(name: :asc)
+
+      elsif args[:min] == nil && args[:max] 
+        where("unit_price <= ?", args[:max]).order(unit_price: :desc)
+
+      elsif args[:min] != nil && args[:max] != nil
         where("unit_price >= ? AND unit_price <= ?", args[:min], args[:max]).order(unit_price: :asc)
+
+      else
+        return []
       end
     end
   end
