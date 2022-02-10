@@ -7,8 +7,6 @@ class Api::V1::ItemsController < ApplicationController
   def show 
     if find_merchant.class == Merchant
       render json: ItemSerializer.new(Item.find(params[:id]))
-    else
-      render json: {error: "Merchant Not Found"}, status: :not_found 
     end
   end
   

@@ -12,15 +12,10 @@ module SearchModule
     def price_search(args={})
       if args[:min] != nil && args[:max] == nil
         where("unit_price >= ?", args[:min]).order(name: :asc)
-
       elsif args[:min] == nil && args[:max] 
         where("unit_price <= ?", args[:max]).order(unit_price: :desc)
-
-      elsif args[:min] != nil && args[:max] != nil
+      else args[:min] != nil && args[:max] != nil
         where("unit_price >= ? AND unit_price <= ?", args[:min], args[:max]).order(unit_price: :asc)
-
-      else
-        return []
       end
     end
   end

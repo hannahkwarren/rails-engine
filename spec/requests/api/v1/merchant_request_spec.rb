@@ -113,5 +113,15 @@ RSpec.describe "The merchants API" do
     end
   end
 
+  context "sad path, non_RESTful" do 
+    it "returns status code 200 and error when no merchant is found in search" do 
+      get "/api/v1/merchants/find?name=NOBODYKNOWSMEATALL"
+
+      expect(response).to be_successful
+      expect(response).to have_http_status(200) 
+      result = JSON.parse(response.body, symbolize_names: true)[:data]
+      expect(result[:error]).to eq("No matching names found")
+    end
+  end
 
 end
