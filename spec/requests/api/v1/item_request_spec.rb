@@ -70,7 +70,6 @@ RSpec.describe "The Items API" do
 
     # We include this header to make sure that these params are passed as JSON rather than as plain text
     post api_v1_items_path, headers: headers, params: JSON.generate(item: item_params)
-    # binding.pry
     created_item = Item.last
 
     expect(response).to be_successful
@@ -87,7 +86,7 @@ RSpec.describe "The Items API" do
     item_params = { description: "Isn't it neat?" }
     headers = {"CONTENT_TYPE" => "application/json"}
     
-      # We include this header to make sure that these params are passed as JSON rather than as plain text
+    # We include this header to make sure that these params are passed as JSON rather than as plain text
     patch api_v1_item_path(id), headers: headers, params: JSON.generate({item: item_params})
     
     item = Item.find_by(id: id)
@@ -120,5 +119,23 @@ RSpec.describe "The Items API" do
     expect(merchant_attributes).to have_key(:name)
     expect(merchant_attributes[:name]).to be_a(String)
   end
+
+  it "can search for many items results" do 
+    item1 = create(:item, name: "nEmo A")
+    item2 = create(:item, name: "nemo B")
+    item3 = create(:item, name: "Nemo C")
+    item4 = create(:item, name: "NemO D")
+    item5 = create(:item, name: "nemo E")
+
+    get "/api/v1/items/find_all?name=Nemo"
+    
+    expect(response).to be_successful
+    data = JSON.parse(response.body, symbolize_names: true)[:data]
+
+    expect(data).to be_an(Array)
+    expect(data.length).to eq(5)
+  end
+
+  
 
 end
