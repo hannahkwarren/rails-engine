@@ -6,7 +6,7 @@ RSpec.describe "The Items API" do
     it "can get all items (regardless of merchant)" do 
       create_list(:item, 5)
 
-      get api_v1_items_path
+      get "/api/v1/items"
 
       expect(response).to be_successful
 
@@ -69,7 +69,7 @@ RSpec.describe "The Items API" do
       })
       headers = {"CONTENT_TYPE" => "application/json"}
 
-      post api_v1_items_path, headers: headers, params: JSON.generate(item: item_params)
+      post "/api/v1/items", headers: headers, params: JSON.generate(item: item_params)
       created_item = Item.last
 
       expect(response).to be_successful
