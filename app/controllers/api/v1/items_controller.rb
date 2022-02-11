@@ -16,8 +16,26 @@ class Api::V1::ItemsController < ApplicationController
     render json: ItemSerializer.new(Item.create(item_params)), status: :created
   end
 
+  def valid_merchant_id?(item_params)
+    if !item_params.has_key?(:merchant_id)
+      true 
+    else
+      false if Merchant.where(id: item_params[:merchant_id]) == [] 
+    end
+  end
+
+  def valid_id?(params)
+    true if Float(params[:id]) rescue false
+  end
+
   def update 
-    render json: ItemSerializer.new(Item.update(params[:id], item_params))
+    if valid_merchant_id?(item_params) == false 
+      render json: { data: {error: "Bad Request"}}, status: 400
+    elsif valid_id?(params) == false
+      render json: { data: {error: "Not Found"}}, status: 404
+    else
+      render json: ItemSerializer.new(Item.update(params[:id], item_params))
+    end
   end
 
   def destroy
@@ -40,24 +58,39 @@ class Api::V1::ItemsController < ApplicationController
     render json: ItemSerializer.new(Item.name_search(params[:name]))
   end
 
-  def check_for_name_price(args={})
-    params[:name] && (params[:min_price] || params[:max_price])
+  def check_for_name_price(args)
+    valid_name_input(args) ^ valid_price_input(args)
   end
 
-  def valid_price_input(args={})
-    args[:min_price].to_i > 0 || args[:max_price].to_i > 0
+  def valid_price_input(args)
+    if args.has_key?(:min_price) || args.has_key?(:max_price)
+      true 
+    else
+      false
+    end
+  end
+
+  def check_positive_prices(args)
+    if (args.has_key?(:min_price) && args[:min_price].to_i < 0) || (args.has_key?(:max_price) && args[:max_price].to_i < 0)
+      false 
+    else
+      true
+    end
   end
 
   def valid_name_input(args)
-    args != ""
+    if args.has_key?(:name)
+      true
+    else
+      false
+    end
   end
 
   def find_item 
-    if check_for_name_price(params) 
+    if check_for_name_price(params) == false
       render json: { data: { error: "Invalid request"}}, status: 400
-    elsif (params[:name])
-
-      if valid_name_input(params[:name])
+    elsif params.has_key?(:name) 
+      if params[:name] != ""
         items = Item.name_search(params[:name])
       
         if items == []
@@ -65,12 +98,13 @@ class Api::V1::ItemsController < ApplicationController
         else
           render json: ItemSerializer.new(items.first)
         end
-      else
-        render json: { data: {error: "No matching names found"} }, status: 200
+      else 
+        render json: { data: { error: "No matching names found"}}, status: 200
       end
-    elsif params[:min_price] || params[:max_price]
-
-      if valid_price_input(params) == true
+    else 
+      if check_positive_prices(params) == false
+        render json: { data: [], error: "error"}, status: :bad_request
+      else 
         items = Item.price_search({min: params[:min_price], max: params[:max_price]})
       
         if items == []
@@ -78,11 +112,7 @@ class Api::V1::ItemsController < ApplicationController
         else
           render json: ItemSerializer.new(items.first)
         end
-      else
-        render json: { data: [], error: "error"}, status: :bad_request
       end
-    else
-      render json: { data: [], error: "error"}, status: :bad_request
     end
   end
 

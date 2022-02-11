@@ -95,6 +95,28 @@ RSpec.describe "The Items API" do
       expect(item.description).to eq("Isn't it neat?")
     end
 
+    it "sad path: can't edit an existing item if merchant id provided is bad" do 
+      item = create(:item)
+      id = item.id
+        
+      previous_description = Item.last.description
+      item_params = { description: "Isn't it neat?", merchant_id: 999999999999999999 }
+      headers = {"CONTENT_TYPE" => "application/json"}
+
+      patch api_v1_item_path(id), headers: headers, params: JSON.generate({item: item_params})
+      # binding.pry
+      expect(response).to have_http_status(400)
+      expect(item.description).to eq(previous_description)
+    end
+
+    it "sad path: item id is a string" do 
+      item_params = { description: "Isn't it neat?"}
+      headers = {"CONTENT_TYPE" => "application/json"}
+      patch api_v1_item_path("stringy"), headers: headers, params: JSON.generate({item: item_params})
+      # binding.pry
+      expect(response).to have_http_status(404)
+    end
+
     it "can destroy an item" do
       item = create(:item)
     
