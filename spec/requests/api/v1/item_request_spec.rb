@@ -124,6 +124,33 @@ RSpec.describe "The Items API" do
       expect(response).to have_http_status(204)
       expect{Item.find(item.id)}.to raise_error(ActiveRecord::RecordNotFound)
     end
+
+    it "deleting an item also deletes the invoice record if there was one item on the invoice" do 
+      item = create(:item)
+      item2 = create(:item)
+      item3 = create(:item)
+
+      invoice = create(:invoice)
+      invoice2 = create(:invoice)
+
+      #invoice with one item should be deleted after item
+      ii = create(:invoice_item, item_id: item.id, invoice_id: invoice.id)
+      
+      expect{ delete api_v1_item_path(item.id) }.to change(Item, :count).by(-1)
+      expect(response).to have_http_status(204)
+      expect{InvoiceItem.find(ii.id)}.to raise_error(ActiveRecord::RecordNotFound)
+      expect{Invoice.find(invoice.id)}.to raise_error(ActiveRecord::RecordNotFound)
+      
+      #invoice with more than one item should not be deleted
+      ii2 = create(:invoice_item, item_id: item2.id, invoice_id: invoice2.id)
+      ii3 = create(:invoice_item, item_id: item3.id, invoice_id: invoice2.id)
+      
+      expect{ delete api_v1_item_path(item2.id) }.to change(Item, :count).by(-1)
+      expect(response).to have_http_status(204)
+      expect{ Item.find(item2.id) }.to raise_error(ActiveRecord::RecordNotFound)
+      expect(Item.find(item3.id)).to eq(item3)
+      expect(Invoice.find(invoice2.id)).to eq(invoice2)
+    end
   
     it "return one merchant at /api/v1/items/:id/merchant" do 
       m_id = create(:merchant).id
