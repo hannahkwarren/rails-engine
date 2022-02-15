@@ -28,11 +28,11 @@ class Api::V1::ItemsController < ApplicationController
     true if Float(params[:id]) rescue false
   end
 
-  def update 
-    if valid_merchant_id?(item_params) == false 
-      render json: { data: {error: "Bad Request"}}, status: 400
+  def update
+    if valid_merchant_id?(item_params) == false
+      render json: { data: { error: 'Bad Request' } }, status: 400
     elsif valid_id?(params) == false
-      render json: { data: {error: "Not Found"}}, status: 404
+      render json: { data: { error: 'Not Found' } }, status: 404
     else
       render json: ItemSerializer.new(Item.update(params[:id], item_params))
     end
@@ -42,24 +42,24 @@ class Api::V1::ItemsController < ApplicationController
     Item.destroy(params[:id])
   end
 
-  def items_merchant 
+  def items_merchant
     Item.find(params[:id]).merchant
   end
 
-  def render_merchant 
+  def render_merchant
     render json: MerchantSerializer.new(items_merchant)
   end
 
-  def find_merchant 
+  def find_merchant
     Merchant.find(items_merchant.id)
   end
 
-  def find_items 
+  def find_items
     render json: ItemSerializer.new(Item.name_search(params[:name]))
   end
 
   private
-  def item_params 
+  def item_params
     params.require(:item).permit(:name, :description, :unit_price, :merchant_id)
   end
 

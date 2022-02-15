@@ -1,6 +1,7 @@
 class InvoiceItem < ApplicationRecord
   belongs_to :item
   belongs_to :invoice
+  has_many :transactions, through: :invoice
 
   after_destroy :delete_invoice_too
 

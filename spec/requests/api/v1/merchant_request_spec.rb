@@ -1,3 +1,5 @@
+# merchant request spec
+#
 require 'rails_helper'
 
 RSpec.describe "The merchants API" do
