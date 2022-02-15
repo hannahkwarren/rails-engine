@@ -1,4 +1,5 @@
 # serializer for top by quantity sold query results
+# frozen_string_literal: false
 
 class MerchantNameQuantitySerializer
   include JSONAPI::Serializer
@@ -8,5 +9,4 @@ class MerchantNameQuantitySerializer
   attributes :count do |object|
     object.count
   end
-
 end

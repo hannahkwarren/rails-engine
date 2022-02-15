@@ -6,7 +6,7 @@ module SearchModule
 
   module ClassMethods
     def name_search(query)
-      where("name ILIKE ?", "%#{query.downcase}%").order(name: :asc)
+      where('name ILIKE ?', "%#{query.downcase}%").order(name: :asc)
     end
 
     def price_search(args={})
