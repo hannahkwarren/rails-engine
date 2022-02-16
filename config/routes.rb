@@ -9,6 +9,7 @@ Rails.application.routes.draw do
 
       namespace :revenue do
         get '/merchants/:id', to: 'merchants#revenue'
+        get '/items', to: 'items#by_quantity'
       end
 
       resources :merchants, only: %i[index show] do
